@@ -809,9 +809,9 @@ class AccountServiceImplTest {
     void getAccountByEmail_NotFound() {
         String expectedEmail = "email";
 
-        when(accountRepository.findByUsername(any())).thenReturn(Optional.empty());
+        when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByUsername(expectedEmail));
+        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByEmail(expectedEmail));
 
         verify(accountRepository).findByEmail(eq(expectedEmail));
     }

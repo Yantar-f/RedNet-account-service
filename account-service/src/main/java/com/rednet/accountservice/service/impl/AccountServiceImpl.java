@@ -16,9 +16,54 @@ import java.util.Map;
 @Service
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
+    private final Map<String, ConstraintsUpdatingChecker> constraintsUpdatingCheckerMap = new HashMap<>();
+
+
+    @FunctionalInterface
+    private interface ConstraintsUpdatingChecker {
+        void checkViolation(Account account);
+    }
 
     public AccountServiceImpl(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
+
+        constraintsUpdatingCheckerMap.put("truetrue", updatedAccount ->
+            accountRepository
+                .findByUsernameOrEmail(updatedAccount.getUsername(), updatedAccount.getEmail())
+                .ifPresent(account -> {
+                    Map<String, String> occupiedFields = new HashMap<>();
+
+                    if (account.getUsername().equals(updatedAccount.getUsername())) {
+                        occupiedFields.put("username", account.getUsername());
+                    }
+
+                    if (account.getEmail().equals(updatedAccount.getEmail())) {
+                        occupiedFields.put("email", account.getEmail());
+                    }
+
+                    throw new OccupiedValueException(occupiedFields);
+                })
+        );
+
+        constraintsUpdatingCheckerMap.put("truefalse", updatedAccount ->
+            accountRepository.findByUsername(updatedAccount.getUsername()).ifPresent(account -> {
+                Map<String, String> occupiedFields = new HashMap<>();
+                occupiedFields.put("username", account.getUsername());
+
+                throw new OccupiedValueException(occupiedFields);
+            })
+        );
+
+        constraintsUpdatingCheckerMap.put("falsetrue", updatedAccount ->
+            accountRepository.findByEmail(updatedAccount.getEmail()).ifPresent(account -> {
+                Map<String, String> occupiedFields = new HashMap<>();
+                occupiedFields.put("email", account.getEmail());
+
+                throw new OccupiedValueException(occupiedFields);
+            })
+        );
+
+        constraintsUpdatingCheckerMap.put("falsefalse", updatedAccount -> {});
     }
 
     @Override
@@ -57,47 +102,14 @@ public class AccountServiceImpl implements AccountService {
             return new AccountNotFoundException(searchFields);
         });
 
-        if (existingAccount.getUsername().equals(updatedAccount.getUsername())) {
-            if ( ! existingAccount.getEmail().equals(updatedAccount.getEmail())) {
-                accountRepository.findByEmail(updatedAccount.getEmail()).ifPresent(account -> {
-                    Map<String, String> occupiedFields = new HashMap<>();
-                    occupiedFields.put("email", account.getEmail());
+        String constraintCheckingKey =
+            !updatedAccount.getUsername().equals(existingAccount.getUsername()) +
+            String.valueOf(!updatedAccount.getEmail().equals(existingAccount.getEmail()));
 
-                    throw new OccupiedValueException(occupiedFields);
-                });
+        constraintsUpdatingCheckerMap.get(constraintCheckingKey).checkViolation(updatedAccount);
 
-                existingAccount.setEmail(updatedAccount.getEmail());
-            }
-        } else if (existingAccount.getEmail().equals(updatedAccount.getEmail())) {
-            accountRepository.findByUsername(updatedAccount.getUsername()).ifPresent(account -> {
-                Map<String, String> occupiedFields = new HashMap<>();
-                occupiedFields.put("username", account.getUsername());
-
-                throw new OccupiedValueException(occupiedFields);
-            });
-
-            existingAccount.setUsername(updatedAccount.getUsername());
-        } else {
-            accountRepository
-                .findByUsernameOrEmail(updatedAccount.getUsername(), updatedAccount.getEmail())
-                .ifPresent(account -> {
-                    Map<String, String> occupiedFields = new HashMap<>();
-
-                    if (account.getUsername().equals(updatedAccount.getUsername())) {
-                        occupiedFields.put("username", account.getUsername());
-                    }
-
-                    if (account.getEmail().equals(updatedAccount.getEmail())) {
-                        occupiedFields.put("email", account.getEmail());
-                    }
-
-                    throw new OccupiedValueException(occupiedFields);
-                });
-
-            existingAccount.setUsername(updatedAccount.getUsername());
-            existingAccount.setEmail(updatedAccount.getEmail());
-        }
-
+        existingAccount.setUsername(updatedAccount.getUsername());
+        existingAccount.setEmail(updatedAccount.getEmail());
         existingAccount.setPassword(updatedAccount.getPassword());
         existingAccount.setSecretWord(updatedAccount.getSecretWord());
         existingAccount.setRoles(updatedAccount.getRoles());
