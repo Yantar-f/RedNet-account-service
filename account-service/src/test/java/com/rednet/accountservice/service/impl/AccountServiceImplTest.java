@@ -65,7 +65,7 @@ class AccountServiceImplTest {
 
         assertDoesNotThrow(() -> {
             Account actualAccount = accountService.createAccount(accountCreationBody);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getDesignation).toArray(String[]::new);
+            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
             assertEquals(expectedUsername, actualAccount.getUsername());
@@ -85,7 +85,7 @@ class AccountServiceImplTest {
 
             compareStringArrayContent(
                 expectedRoles,
-                account.getRoles().stream().map(Role::getDesignation).toArray(String[]::new)
+                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
             )
         ));
     }
@@ -184,7 +184,7 @@ class AccountServiceImplTest {
 
             compareStringArrayContent(
                 expectedUpdatedRoles,
-                account.getRoles().stream().map(Role::getDesignation).toArray(String[]::new)
+                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
             )
         ));
     }
@@ -305,7 +305,7 @@ class AccountServiceImplTest {
 
             compareStringArrayContent(
                 expectedUpdatedRoles,
-                account.getRoles().stream().map(Role::getDesignation).toArray(String[]::new)
+                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
            )
         ));
     }
@@ -425,7 +425,7 @@ class AccountServiceImplTest {
 
             compareStringArrayContent(
                expectedUpdatedRoles,
-               account.getRoles().stream().map(Role::getDesignation).toArray(String[]::new)
+               account.getRoles().stream().map(Role::getID).toArray(String[]::new)
             )
         ));
     }
@@ -544,7 +544,7 @@ class AccountServiceImplTest {
 
             compareStringArrayContent(
                 expectedUpdatedRoles,
-                account.getRoles().stream().map(Role::getDesignation).toArray(String[]::new)
+                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
             )
         ));
     }
@@ -609,7 +609,7 @@ class AccountServiceImplTest {
 
         assertDoesNotThrow(() -> {
             Account actualAccount = accountService.getAccountByID(expectedID);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getDesignation).toArray(String[]::new);
+            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
             assertEquals(expectedUsername, actualAccount.getUsername());
@@ -659,7 +659,7 @@ class AccountServiceImplTest {
 
         assertDoesNotThrow(() -> {
             Account actualAccount = accountService.getAccountByUsernameOrEmail(expectedUsername, expectedEmail);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getDesignation).toArray(String[]::new);
+            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
             assertEquals(expectedUsername, actualAccount.getUsername());
@@ -742,7 +742,7 @@ class AccountServiceImplTest {
 
         assertDoesNotThrow(() -> {
             Account actualAccount = accountService.getAccountByUsername(expectedUsername);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getDesignation).toArray(String[]::new);
+            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
             assertEquals(expectedUsername, actualAccount.getUsername());
@@ -792,7 +792,7 @@ class AccountServiceImplTest {
 
         assertDoesNotThrow(() -> {
             Account actualAccount = accountService.getAccountByEmail(expectedEmail);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getDesignation).toArray(String[]::new);
+            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
             assertEquals(expectedUsername, actualAccount.getUsername());
