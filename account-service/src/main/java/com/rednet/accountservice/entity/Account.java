@@ -1,7 +1,5 @@
 package com.rednet.accountservice.entity;
 
-
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +38,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Digits(fraction = 0, integer = 0)
     @NotBlank(message = "ID min length is 1")
+    @Column(name = "account_id")
     private long ID;
 
     @Column(name = "username")
