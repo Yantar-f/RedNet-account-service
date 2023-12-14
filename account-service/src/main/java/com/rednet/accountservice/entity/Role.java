@@ -9,20 +9,20 @@ import jakarta.persistence.Table;
 @Table(name = "roles")
 public class Role {
     @Id
-    @Column(name = "designation")
-    private String designation;
+    @Column(name = "role_id")
+    private String ID;
 
     protected Role() {}
-    public Role(String designation){
-        this.designation = designation;
+    public Role(String ID){
+        this.ID = ID;
     }
 
-    public String getDesignation() {
-        return designation;
+    public String getID() {
+        return ID;
     }
 
-    public void setDesignation(String designation) {
-        this.designation = designation;
+    public void setID(String ID) {
+        this.ID = ID;
     }
 
 }
