@@ -27,8 +27,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AccountServiceImplTest {
-    private AccountRepository accountRepository = mock(AccountRepository.class);
-    private AccountService accountService = new AccountServiceImpl(accountRepository);
+    private final AccountRepository accountRepository = mock(AccountRepository.class);
+    private final AccountService accountService = new AccountServiceImpl(accountRepository);
 
     @Test
     void createAccount() {
@@ -554,7 +554,6 @@ class AccountServiceImplTest {
         long expectedInvalidID = 122;
 
         String
-            expectedUsername = "username",
             expectedUpdatedUsername = "usernameUpdated",
             expectedEmail = "email",
             expectedUpdatedPassword = "passwordUpdated",
