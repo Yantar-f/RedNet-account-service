@@ -28,20 +28,22 @@ import static org.mockito.Mockito.when;
 
 class AccountServiceImplTest {
     private final AccountRepository accountRepository = mock(AccountRepository.class);
-    private final AccountService accountService = new AccountServiceImpl(accountRepository);
+    private final AccountService    accountService = new AccountServiceImpl(accountRepository);
+
+    private final long      expectedID = 123;
+    private final String    expectedUsername = "username";
+    private final String    expectedEmail = "email";
+    private final String    expectedPassword = "password";
+    private final String    expectedSecretWord = "secretWord";
+    private final String    expectedUpdatedUsername = "usernameUpdated";
+    private final String    expectedUpdatedEmail = "emailUpdated";
+    private final String    expectedUpdatedPassword = "passwordUpdated";
+    private final String    expectedUpdatedSecretWord = "secretWordUpdated";
+    private final String[]  expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
+    private final String[]  expectedRoles = new String[] {"ROLE_USER"};
 
     @Test
     void createAccount() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedSecretWord = "secretWord";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         AccountCreationBody accountCreationBody = new AccountCreationBody(
             expectedUsername,
             expectedEmail,
@@ -92,14 +94,6 @@ class AccountServiceImplTest {
 
     @Test
     void createAccount_OccupiedValue() {
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedSecretWord = "secretWord";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         AccountCreationBody accountCreationBody = new AccountCreationBody(
             expectedUsername,
             expectedEmail,
@@ -127,23 +121,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_UsernameAndEmailUniqueValidation() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedUpdatedUsername = "usernameUpdated",
-            expectedEmail = "email",
-            expectedUpdatedEmail = "emailUpdated",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -191,22 +168,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_UsernameAndEmailUniqueValidation_OccupiedValue() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedUpdatedUsername = "usernameUpdated",
-            expectedEmail = "email",
-            expectedUpdatedEmail = "emailUpdated",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -251,21 +212,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_UsernameUniqueValidation() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedUpdatedUsername = "usernameUpdated",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -312,21 +258,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_UsernameUniqueValidation_OccupiedValue() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedUpdatedUsername = "usernameUpdated",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -371,21 +302,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_EmailUniqueValidation() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedUpdatedEmail = "emailUpdated",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -432,21 +348,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_EmailUniqueValidation_OccupiedValue() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedUpdatedEmail = "emailUpdated",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -491,20 +392,6 @@ class AccountServiceImplTest {
 
     @Test
     void updateAccount_WithoutUsernameAndEmailUpdating() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedSecretWord = "secretWord",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[]
-            expectedRoles = new String[] {"ROLE_USER"},
-            expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -553,14 +440,6 @@ class AccountServiceImplTest {
     void updateAccount_NotFound() {
         long expectedInvalidID = 122;
 
-        String
-            expectedUpdatedUsername = "usernameUpdated",
-            expectedEmail = "email",
-            expectedUpdatedPassword = "passwordUpdated",
-            expectedUpdatedSecretWord = "secretWordUpdated";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         Account updatedAccount = new Account(
             expectedUpdatedUsername,
             expectedEmail,
@@ -584,16 +463,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByID() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedSecretWord = "secretWord";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -623,8 +492,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByID_NotFound() {
-        long expectedID = 123;
-
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByID(expectedID));
@@ -634,16 +501,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByUsernameOrEmail() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedSecretWord = "secretWord";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -673,10 +530,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByUsernameOrEmail_NotFound() {
-        String
-            expectedUsername = "username",
-            expectedEmail = "email";
-
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.empty());
 
         assertThrows(
@@ -689,8 +542,6 @@ class AccountServiceImplTest {
 
     @Test
     void deleteAccountByID() {
-        long expectedID = 123;
-
         Account expectedAccount = new Account("","","","", List.of());
 
         expectedAccount.setID(expectedID);
@@ -705,8 +556,6 @@ class AccountServiceImplTest {
 
     @Test
     void deleteAccountByID_NotFound() {
-        long expectedID = 123;
-
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> accountService.deleteAccountByID(expectedID));
@@ -717,16 +566,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByUsername() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedSecretWord = "secretWord";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -756,8 +595,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByUsername_NotFound() {
-        String expectedUsername = "username";
-
         when(accountRepository.findByUsername(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByUsername(expectedUsername));
@@ -767,16 +604,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByEmail() {
-        long expectedID = 123;
-
-        String
-            expectedUsername = "username",
-            expectedEmail = "email",
-            expectedPassword = "password",
-            expectedSecretWord = "secretWord";
-
-        String[] expectedRoles = new String[] {"ROLE_USER"};
-
         Account expectedAccount = new Account(
             expectedUsername,
             expectedEmail,
@@ -806,8 +633,6 @@ class AccountServiceImplTest {
 
     @Test
     void getAccountByEmail_NotFound() {
-        String expectedEmail = "email";
-
         when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByEmail(expectedEmail));
@@ -817,8 +642,6 @@ class AccountServiceImplTest {
 
     @Test
     void existsAccountByUsername() {
-        String expectedUsername = "username";
-
         when(accountRepository.existsByUsername(any())).thenReturn(true);
 
         assertTrue(accountService.existsAccountByUsername(expectedUsername));
@@ -828,8 +651,6 @@ class AccountServiceImplTest {
 
     @Test
     void existsAccountByUsername_NotFound() {
-        String expectedUsername = "username";
-
         when(accountRepository.existsByUsername(any())).thenReturn(false);
 
         assertFalse(accountService.existsAccountByUsername(expectedUsername));
@@ -839,8 +660,6 @@ class AccountServiceImplTest {
 
     @Test
     void existsAccountByEmail() {
-        String expectedEmail = "email";
-
         when(accountRepository.existsByEmail(any())).thenReturn(true);
 
         assertTrue(accountService.existsAccountByEmail(expectedEmail));
@@ -850,8 +669,6 @@ class AccountServiceImplTest {
 
     @Test
     void existsAccountByEmail_NotFound() {
-        String expectedEmail = "email";
-
         when(accountRepository.existsByEmail(any())).thenReturn(false);
 
         assertFalse(accountService.existsAccountByEmail(expectedEmail));
