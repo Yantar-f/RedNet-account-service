@@ -7,6 +7,7 @@ import com.rednet.accountservice.exception.AccountNotFoundException;
 import com.rednet.accountservice.exception.OccupiedValueException;
 import com.rednet.accountservice.repository.AccountRepository;
 import com.rednet.accountservice.service.AccountService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -21,10 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class AccountServiceImplTest {
     private final AccountRepository accountRepository = mock(AccountRepository.class);
@@ -41,6 +39,11 @@ class AccountServiceImplTest {
     private final String    expectedUpdatedSecretWord = "secretWordUpdated";
     private final String[]  expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
     private final String[]  expectedRoles = new String[] {"ROLE_USER"};
+
+    @AfterEach
+    public void after() {
+        verifyNoMoreInteractions(accountRepository);
+    }
 
     @Test
     void createAccount() {
@@ -116,7 +119,6 @@ class AccountServiceImplTest {
         assertThrows(OccupiedValueException.class, () -> accountService.createAccount(accountCreationBody));
 
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
@@ -149,8 +151,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
-        verify(accountRepository, never()).findByEmail(any());
-        verify(accountRepository, never()).findByUsername(any());
 
         verify(accountRepository).save(argThat(account ->
             account.getID() == expectedID &&
@@ -205,9 +205,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
-        verify(accountRepository, never()).findByEmail(any());
-        verify(accountRepository, never()).findByUsername(any());
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
@@ -239,8 +236,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
-        verify(accountRepository, never()).findByUsernameOrEmail(any(), any());
-        verify(accountRepository, never()).findByEmail(any());
 
         verify(accountRepository).save(argThat(account ->
             account.getID() == expectedID &&
@@ -295,9 +290,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
-        verify(accountRepository, never()).findByEmail(any());
-        verify(accountRepository, never()).findByUsernameOrEmail(any(), any());
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
@@ -329,8 +321,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
-        verify(accountRepository, never()).findByUsername(any());
-        verify(accountRepository, never()).findByUsernameOrEmail(any(), any());
 
         verify(accountRepository).save(argThat(account ->
             account.getID() == expectedID &&
@@ -385,9 +375,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
-        verify(accountRepository, never()).findByUsername(any());
-        verify(accountRepository, never()).findByUsernameOrEmail(any(), any());
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
@@ -418,9 +405,6 @@ class AccountServiceImplTest {
         assertDoesNotThrow(() -> accountService.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository, never()).findByUsernameOrEmail(any(), any());
-        verify(accountRepository, never()).findByUsername(any());
-        verify(accountRepository, never()).findByEmail(any());
 
         verify(accountRepository).save(argThat(account ->
             account.getID() == expectedID &&
@@ -455,10 +439,6 @@ class AccountServiceImplTest {
         assertThrows(AccountNotFoundException.class, () -> accountService.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedInvalidID));
-        verify(accountRepository, never()).findByUsernameOrEmail(any(), any());
-        verify(accountRepository, never()).findByEmail(any());
-        verify(accountRepository, never()).findByUsername(any());
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
@@ -561,7 +541,6 @@ class AccountServiceImplTest {
         assertThrows(AccountNotFoundException.class, () -> accountService.deleteAccountByID(expectedID));
 
         verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository, never()).delete(any());
     }
 
     @Test
