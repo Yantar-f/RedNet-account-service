@@ -7,12 +7,15 @@ import com.rednet.accountservice.exception.AccountNotFoundException;
 import com.rednet.accountservice.exception.OccupiedValueException;
 import com.rednet.accountservice.repository.AccountRepository;
 import com.rednet.accountservice.service.AccountService;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,18 +28,22 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class AccountServiceImplTest {
+    private static final int TEST_REPETITIONS_COUNT = 3;
+    Random  rand = new Random();
+    int     stringLengthBound = 200;
+
     private final AccountRepository accountRepository = mock(AccountRepository.class);
     private final AccountService    accountService = new AccountServiceImpl(accountRepository);
 
-    private final long      expectedID = 123;
-    private final String    expectedUsername = "username";
-    private final String    expectedEmail = "email";
-    private final String    expectedPassword = "password";
-    private final String    expectedSecretWord = "secretWord";
-    private final String    expectedUpdatedUsername = "usernameUpdated";
-    private final String    expectedUpdatedEmail = "emailUpdated";
-    private final String    expectedUpdatedPassword = "passwordUpdated";
-    private final String    expectedUpdatedSecretWord = "secretWordUpdated";
+    private final long      expectedID = rand.nextLong();
+    private final String    expectedUsername = randString();
+    private final String    expectedEmail = randString();
+    private final String    expectedPassword = randString();
+    private final String    expectedSecretWord = randString();
+    private final String    expectedUpdatedUsername = randString();
+    private final String    expectedUpdatedEmail = randString();
+    private final String    expectedUpdatedPassword = randString();
+    private final String    expectedUpdatedSecretWord = randString();
     private final String[]  expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
     private final String[]  expectedRoles = new String[] {"ROLE_USER"};
 
@@ -45,7 +52,7 @@ class AccountServiceImplTest {
         verifyNoMoreInteractions(accountRepository);
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void createAccount() {
         AccountCreationBody accountCreationBody = new AccountCreationBody(
             expectedUsername,
@@ -95,7 +102,7 @@ class AccountServiceImplTest {
         ));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void createAccount_OccupiedValue() {
         AccountCreationBody accountCreationBody = new AccountCreationBody(
             expectedUsername,
@@ -121,7 +128,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void updateAccount_UsernameAndEmailUniqueValidation() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -207,7 +214,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void updateAccount_UsernameUniqueValidation() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -292,7 +299,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void updateAccount_EmailUniqueValidation() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -377,7 +384,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void updateAccount_WithoutUsernameAndEmailUpdating() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -420,9 +427,9 @@ class AccountServiceImplTest {
         ));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void updateAccount_NotFound() {
-        long expectedInvalidID = 122;
+        long expectedInvalidID = rand.nextLong();
 
         Account updatedAccount = new Account(
             expectedUpdatedUsername,
@@ -441,7 +448,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedInvalidID));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByID() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -470,7 +477,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedID));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByID_NotFound() {
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
@@ -479,7 +486,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedID));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByUsernameOrEmail() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -508,7 +515,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByUsernameOrEmail_NotFound() {
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.empty());
 
@@ -520,7 +527,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void deleteAccountByID() {
         Account expectedAccount = new Account("","","","", List.of());
 
@@ -534,7 +541,7 @@ class AccountServiceImplTest {
         verify(accountRepository).delete(argThat(account -> account.getID() == expectedID));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void deleteAccountByID_NotFound() {
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
@@ -543,7 +550,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedID));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByUsername() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -572,7 +579,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsername(eq(expectedUsername));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByUsername_NotFound() {
         when(accountRepository.findByUsername(any())).thenReturn(Optional.empty());
 
@@ -581,7 +588,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsername(eq(expectedUsername));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByEmail() {
         Account expectedAccount = new Account(
             expectedUsername,
@@ -610,7 +617,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByEmail(eq(expectedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void getAccountByEmail_NotFound() {
         when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
@@ -619,7 +626,7 @@ class AccountServiceImplTest {
         verify(accountRepository).findByEmail(eq(expectedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void existsAccountByUsername() {
         when(accountRepository.existsByUsername(any())).thenReturn(true);
 
@@ -628,7 +635,7 @@ class AccountServiceImplTest {
         verify(accountRepository).existsByUsername(eq(expectedUsername));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void existsAccountByUsername_NotFound() {
         when(accountRepository.existsByUsername(any())).thenReturn(false);
 
@@ -637,7 +644,7 @@ class AccountServiceImplTest {
         verify(accountRepository).existsByUsername(eq(expectedUsername));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void existsAccountByEmail() {
         when(accountRepository.existsByEmail(any())).thenReturn(true);
 
@@ -646,7 +653,7 @@ class AccountServiceImplTest {
         verify(accountRepository).existsByEmail(eq(expectedEmail));
     }
 
-    @Test
+    @RepeatedTest(TEST_REPETITIONS_COUNT)
     void existsAccountByEmail_NotFound() {
         when(accountRepository.existsByEmail(any())).thenReturn(false);
 
@@ -663,5 +670,13 @@ class AccountServiceImplTest {
         }
 
         return true;
+    }
+
+    private int randStringLength() {
+        return rand.nextInt(stringLengthBound - 1) + 1;
+    }
+
+    private String randString() {
+        return RandomStringUtils.random(randStringLength());
     }
 }
