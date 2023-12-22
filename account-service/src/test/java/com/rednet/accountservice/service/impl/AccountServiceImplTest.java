@@ -33,7 +33,7 @@ class AccountServiceImplTest {
     int     stringLengthBound = 200;
 
     private final AccountRepository accountRepository = mock(AccountRepository.class);
-    private final AccountService    accountService = new AccountServiceImpl(accountRepository);
+    private final AccountService    sut = new AccountServiceImpl(accountRepository);
 
     private final long      expectedID = rand.nextLong();
     private final String    expectedUsername = randString();
@@ -76,7 +76,7 @@ class AccountServiceImplTest {
         when(accountRepository.save(any())).thenReturn(expectedAccount);
 
         assertDoesNotThrow(() -> {
-            Account actualAccount = accountService.createAccount(accountCreationBody);
+            Account actualAccount = sut.createAccount(accountCreationBody);
             String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
@@ -123,7 +123,7 @@ class AccountServiceImplTest {
 
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.of(expectedAccount));
 
-        assertThrows(OccupiedValueException.class, () -> accountService.createAccount(accountCreationBody));
+        assertThrows(OccupiedValueException.class, () -> sut.createAccount(accountCreationBody));
 
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
@@ -154,7 +154,7 @@ class AccountServiceImplTest {
         when(accountRepository.findByUsernameOrEmail(any(),any())).thenReturn(Optional.empty());
         when(accountRepository.save(any())).thenReturn(updatedAccount);
 
-        assertDoesNotThrow(() -> accountService.updateAccount(updatedAccount));
+        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
@@ -208,7 +208,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByUsernameOrEmail(any(),any())).thenReturn(Optional.of(existingAccount));
 
-        assertThrows(OccupiedValueException.class, () -> accountService.updateAccount(updatedAccount));
+        assertThrows(OccupiedValueException.class, () -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
@@ -239,7 +239,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.save(any())).thenReturn(updatedAccount);
 
-        assertDoesNotThrow(() -> accountService.updateAccount(updatedAccount));
+        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
@@ -293,7 +293,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByUsername(any())).thenReturn(Optional.of(existingAccount));
 
-        assertThrows(OccupiedValueException.class, () -> accountService.updateAccount(updatedAccount));
+        assertThrows(OccupiedValueException.class, () -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
@@ -324,7 +324,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
-        assertDoesNotThrow(() -> accountService.updateAccount(updatedAccount));
+        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
@@ -378,7 +378,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByEmail(any())).thenReturn(Optional.of(existingAccount));
 
-        assertThrows(OccupiedValueException.class, () -> accountService.updateAccount(updatedAccount));
+        assertThrows(OccupiedValueException.class, () -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
@@ -409,7 +409,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.save(any())).thenReturn(updatedAccount);
 
-        assertDoesNotThrow(() -> accountService.updateAccount(updatedAccount));
+        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
 
@@ -443,7 +443,7 @@ class AccountServiceImplTest {
 
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> accountService.updateAccount(updatedAccount));
+        assertThrows(AccountNotFoundException.class, () -> sut.updateAccount(updatedAccount));
 
         verify(accountRepository).findById(eq(expectedInvalidID));
     }
@@ -463,7 +463,7 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
 
         assertDoesNotThrow(() -> {
-            Account actualAccount = accountService.getAccountByID(expectedID);
+            Account actualAccount = sut.getAccountByID(expectedID);
             String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
@@ -481,7 +481,7 @@ class AccountServiceImplTest {
     void getAccountByID_NotFound() {
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByID(expectedID));
+        assertThrows(AccountNotFoundException.class, () -> sut.getAccountByID(expectedID));
 
         verify(accountRepository).findById(eq(expectedID));
     }
@@ -501,7 +501,7 @@ class AccountServiceImplTest {
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.of(expectedAccount));
 
         assertDoesNotThrow(() -> {
-            Account actualAccount = accountService.getAccountByUsernameOrEmail(expectedUsername, expectedEmail);
+            Account actualAccount = sut.getAccountByUsernameOrEmail(expectedUsername, expectedEmail);
             String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
@@ -521,7 +521,7 @@ class AccountServiceImplTest {
 
         assertThrows(
             AccountNotFoundException.class,
-            () -> accountService.getAccountByUsernameOrEmail(expectedUsername, expectedEmail)
+            () -> sut.getAccountByUsernameOrEmail(expectedUsername, expectedEmail)
         );
 
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
@@ -535,7 +535,7 @@ class AccountServiceImplTest {
 
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
 
-        assertDoesNotThrow(() -> accountService.deleteAccountByID(expectedID));
+        assertDoesNotThrow(() -> sut.deleteAccountByID(expectedID));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).delete(argThat(account -> account.getID() == expectedID));
@@ -545,7 +545,7 @@ class AccountServiceImplTest {
     void deleteAccountByID_NotFound() {
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> accountService.deleteAccountByID(expectedID));
+        assertThrows(AccountNotFoundException.class, () -> sut.deleteAccountByID(expectedID));
 
         verify(accountRepository).findById(eq(expectedID));
     }
@@ -565,7 +565,7 @@ class AccountServiceImplTest {
         when(accountRepository.findByUsername(any())).thenReturn(Optional.of(expectedAccount));
 
         assertDoesNotThrow(() -> {
-            Account actualAccount = accountService.getAccountByUsername(expectedUsername);
+            Account actualAccount = sut.getAccountByUsername(expectedUsername);
             String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
@@ -583,7 +583,7 @@ class AccountServiceImplTest {
     void getAccountByUsername_NotFound() {
         when(accountRepository.findByUsername(any())).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByUsername(expectedUsername));
+        assertThrows(AccountNotFoundException.class, () -> sut.getAccountByUsername(expectedUsername));
 
         verify(accountRepository).findByUsername(eq(expectedUsername));
     }
@@ -603,7 +603,7 @@ class AccountServiceImplTest {
         when(accountRepository.findByEmail(any())).thenReturn(Optional.of(expectedAccount));
 
         assertDoesNotThrow(() -> {
-            Account actualAccount = accountService.getAccountByEmail(expectedEmail);
+            Account actualAccount = sut.getAccountByEmail(expectedEmail);
             String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
 
             assertEquals(expectedID, actualAccount.getID());
@@ -621,7 +621,7 @@ class AccountServiceImplTest {
     void getAccountByEmail_NotFound() {
         when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> accountService.getAccountByEmail(expectedEmail));
+        assertThrows(AccountNotFoundException.class, () -> sut.getAccountByEmail(expectedEmail));
 
         verify(accountRepository).findByEmail(eq(expectedEmail));
     }
@@ -630,7 +630,7 @@ class AccountServiceImplTest {
     void existsAccountByUsername() {
         when(accountRepository.existsByUsername(any())).thenReturn(true);
 
-        assertTrue(accountService.existsAccountByUsername(expectedUsername));
+        assertTrue(sut.existsAccountByUsername(expectedUsername));
 
         verify(accountRepository).existsByUsername(eq(expectedUsername));
     }
@@ -639,7 +639,7 @@ class AccountServiceImplTest {
     void existsAccountByUsername_NotFound() {
         when(accountRepository.existsByUsername(any())).thenReturn(false);
 
-        assertFalse(accountService.existsAccountByUsername(expectedUsername));
+        assertFalse(sut.existsAccountByUsername(expectedUsername));
 
         verify(accountRepository).existsByUsername(eq(expectedUsername));
     }
@@ -648,7 +648,7 @@ class AccountServiceImplTest {
     void existsAccountByEmail() {
         when(accountRepository.existsByEmail(any())).thenReturn(true);
 
-        assertTrue(accountService.existsAccountByEmail(expectedEmail));
+        assertTrue(sut.existsAccountByEmail(expectedEmail));
 
         verify(accountRepository).existsByEmail(eq(expectedEmail));
     }
@@ -657,7 +657,7 @@ class AccountServiceImplTest {
     void existsAccountByEmail_NotFound() {
         when(accountRepository.existsByEmail(any())).thenReturn(false);
 
-        assertFalse(accountService.existsAccountByEmail(expectedEmail));
+        assertFalse(sut.existsAccountByEmail(expectedEmail));
 
         verify(accountRepository).existsByEmail(eq(expectedEmail));
     }
