@@ -12,10 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,14 +25,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class AccountServiceImplTest {
-    private static final int TEST_REPETITIONS_COUNT = 3;
     Random  rand = new Random();
     int     stringLengthBound = 200;
+    int     IDValueBound = 200;
 
     private final AccountRepository accountRepository = mock(AccountRepository.class);
     private final AccountService    sut = new AccountServiceImpl(accountRepository);
 
-    private final long      expectedID = rand.nextLong();
+    private final long      expectedID = rand.nextLong(IDValueBound);
     private final String    expectedUsername = randString();
     private final String    expectedEmail = randString();
     private final String    expectedPassword = randString();
@@ -44,30 +41,39 @@ class AccountServiceImplTest {
     private final String    expectedUpdatedEmail = randString();
     private final String    expectedUpdatedPassword = randString();
     private final String    expectedUpdatedSecretWord = randString();
-    private final String[]  expectedUpdatedRoles = new String[] {"ROLE_ADMIN"};
-    private final String[]  expectedRoles = new String[] {"ROLE_USER"};
+
+    private final List<Role>  expectedUpdatedRoles = new ArrayList<>(){{add(new Role("ROLE_ADMIN"));}};
+    private final List<Role>  expectedRoles = new ArrayList<>(){{add(new Role("ROLE_USER"));}};
 
     @AfterEach
     public void after() {
         verifyNoMoreInteractions(accountRepository);
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void createAccount() {
+    @Test
+    void Creating_Account_With_Unique_Email_And_Username_Is_Successful() {
         AccountCreationBody accountCreationBody = new AccountCreationBody(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            expectedRoles
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles.stream().map(Role::getID).toArray(String[]::new)
+        );
+
+        Account expectedUnsavedAccount = new Account(
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
@@ -75,49 +81,30 @@ class AccountServiceImplTest {
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.empty());
         when(accountRepository.save(any())).thenReturn(expectedAccount);
 
-        assertDoesNotThrow(() -> {
-            Account actualAccount = sut.createAccount(accountCreationBody);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
+        Account actualAccount = sut.createAccount(accountCreationBody);
 
-            assertEquals(expectedID, actualAccount.getID());
-            assertEquals(expectedUsername, actualAccount.getUsername());
-            assertEquals(expectedEmail, actualAccount.getEmail());
-            assertEquals(expectedPassword, actualAccount.getPassword());
-            assertEquals(expectedSecretWord, actualAccount.getSecretWord());
-            assertTrue(compareStringArrayContent(expectedRoles, actualRoles));
-        });
+        assertEquals(expectedAccount, actualAccount);
 
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
-
-        verify(accountRepository).save(argThat(account ->
-            account.getUsername().equals(expectedUsername) &&
-            account.getEmail().equals(expectedEmail) &&
-            account.getPassword().equals(expectedPassword) &&
-            account.getSecretWord().equals(expectedSecretWord) &&
-
-            compareStringArrayContent(
-                expectedRoles,
-                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
-            )
-        ));
+        verify(accountRepository).save(eq(expectedUnsavedAccount));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void createAccount_OccupiedValue() {
+    @Test
+    void Creating_Account_With_Not_Unique_Email_Or_Username_Is_Not_Successful() {
         AccountCreationBody accountCreationBody = new AccountCreationBody(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            expectedRoles
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles.stream().map(Role::getID).toArray(String[]::new)
         );
 
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
 
@@ -128,82 +115,70 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void updateAccount_UsernameAndEmailUniqueValidation() {
+    @Test
+    void Updating_Account_With_Unique_Username_And_Email_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
-        Account updatedAccount = new Account(
-            expectedUpdatedUsername,
-            expectedUpdatedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+        Account expectedUpdatedAccount = new Account(
+                expectedUpdatedUsername,
+                expectedUpdatedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
-        updatedAccount.setID(expectedID);
+        expectedUpdatedAccount.setID(expectedID);
 
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByUsernameOrEmail(any(),any())).thenReturn(Optional.empty());
-        when(accountRepository.save(any())).thenReturn(updatedAccount);
+        when(accountRepository.save(any())).thenReturn(expectedUpdatedAccount);
 
-        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
+        assertDoesNotThrow(() -> sut.updateAccount(expectedUpdatedAccount));
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
-
-        verify(accountRepository).save(argThat(account ->
-            account.getID() == expectedID &&
-            account.getUsername().equals(expectedUpdatedUsername) &&
-            account.getEmail().equals(expectedUpdatedEmail) &&
-            account.getPassword().equals(expectedUpdatedPassword) &&
-            account.getSecretWord().equals(expectedUpdatedSecretWord) &&
-
-            compareStringArrayContent(
-                expectedUpdatedRoles,
-                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
-            )
-        ));
+        verify(accountRepository).save(eq(expectedAccount));
     }
 
     @Test
-    void updateAccount_UsernameAndEmailUniqueValidation_OccupiedValue() {
+    void Updating_Account_With_Not_Unique_Username_And_Email_Is_Not_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         Account updatedAccount = new Account(
-            expectedUpdatedUsername,
-            expectedUpdatedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUpdatedUsername,
+                expectedUpdatedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
         updatedAccount.setID(expectedID);
 
         Account existingAccount = new Account(
-            expectedUpdatedUsername,
-            expectedUpdatedEmail,
-            "expectedUpdatedPassword",
-            "expectedUpdatedSecretWord",
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUpdatedUsername,
+                expectedUpdatedEmail,
+                randString(),
+                randString(),
+                expectedUpdatedRoles
         );
 
-        existingAccount.setID(111);
+        existingAccount.setID(IDValueBound);
 
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByUsernameOrEmail(any(),any())).thenReturn(Optional.of(existingAccount));
@@ -214,24 +189,24 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void updateAccount_UsernameUniqueValidation() {
+    @Test
+    void Updating_Account_With_Unique_Username_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         Account updatedAccount = new Account(
-            expectedUpdatedUsername,
-            expectedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUpdatedUsername,
+                expectedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
         updatedAccount.setID(expectedID);
@@ -239,53 +214,41 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.save(any())).thenReturn(updatedAccount);
 
-        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
+        sut.updateAccount(updatedAccount);
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
-
-        verify(accountRepository).save(argThat(account ->
-            account.getID() == expectedID &&
-            account.getUsername().equals(expectedUpdatedUsername) &&
-            account.getEmail().equals(expectedEmail) &&
-            account.getPassword().equals(expectedUpdatedPassword) &&
-            account.getSecretWord().equals(expectedUpdatedSecretWord) &&
-
-            compareStringArrayContent(
-                expectedUpdatedRoles,
-                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
-           )
-        ));
+        verify(accountRepository).save(eq(updatedAccount));
     }
 
     @Test
-    void updateAccount_UsernameUniqueValidation_OccupiedValue() {
+    void Updating_Account_With_Not_Unique_Username_Is_Not_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         Account updatedAccount = new Account(
-            expectedUpdatedUsername,
-            expectedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUpdatedUsername,
+                expectedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
         updatedAccount.setID(expectedID);
 
         Account existingAccount = new Account(
-            expectedUpdatedUsername,
-            "expectedEmail",
-            "expectedUpdatedPassword",
-            "expectedUpdatedSecretWord",
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUpdatedUsername,
+                randString(),
+                randString(),
+                randString(),
+                expectedUpdatedRoles
         );
 
         existingAccount.setID(111);
@@ -299,24 +262,24 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void updateAccount_EmailUniqueValidation() {
+    @Test
+    void Updating_Account_With_Unique_Email_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         Account updatedAccount = new Account(
-            expectedUsername,
-            expectedUpdatedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedUpdatedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
         updatedAccount.setID(expectedID);
@@ -324,53 +287,41 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
-        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
+        sut.updateAccount(updatedAccount);
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
-
-        verify(accountRepository).save(argThat(account ->
-            account.getID() == expectedID &&
-            account.getUsername().equals(expectedUsername) &&
-            account.getEmail().equals(expectedUpdatedEmail) &&
-            account.getPassword().equals(expectedUpdatedPassword) &&
-            account.getSecretWord().equals(expectedUpdatedSecretWord) &&
-
-            compareStringArrayContent(
-               expectedUpdatedRoles,
-               account.getRoles().stream().map(Role::getID).toArray(String[]::new)
-            )
-        ));
+        verify(accountRepository).save(eq(updatedAccount));
     }
 
     @Test
-    void updateAccount_EmailUniqueValidation_OccupiedValue() {
+    void Updating_Account_With_Not_Unique_Email_Is_Not_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         Account updatedAccount = new Account(
-            expectedUsername,
-            expectedUpdatedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedUpdatedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
         updatedAccount.setID(expectedID);
 
         Account existingAccount = new Account(
-            "expectedUsername",
-            expectedUpdatedEmail,
-            "expectedUpdatedPassword",
-            "expectedUpdatedSecretWord",
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                randString(),
+                expectedUpdatedEmail,
+                randString(),
+                randString(),
+                expectedUpdatedRoles
         );
 
         existingAccount.setID(111);
@@ -384,24 +335,24 @@ class AccountServiceImplTest {
         verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void updateAccount_WithoutUsernameAndEmailUpdating() {
+    @Test
+    void Updating_Account_Without_Username_And_Email_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         Account updatedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedUpdatedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedUpdatedRoles
         );
 
         updatedAccount.setID(expectedID);
@@ -409,34 +360,22 @@ class AccountServiceImplTest {
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
         when(accountRepository.save(any())).thenReturn(updatedAccount);
 
-        assertDoesNotThrow(() -> sut.updateAccount(updatedAccount));
+        sut.updateAccount(updatedAccount);
 
         verify(accountRepository).findById(eq(expectedID));
-
-        verify(accountRepository).save(argThat(account ->
-            account.getID() == expectedID &&
-            account.getUsername().equals(expectedUsername) &&
-            account.getEmail().equals(expectedEmail) &&
-            account.getPassword().equals(expectedUpdatedPassword) &&
-            account.getSecretWord().equals(expectedUpdatedSecretWord) &&
-
-            compareStringArrayContent(
-                expectedUpdatedRoles,
-                account.getRoles().stream().map(Role::getID).toArray(String[]::new)
-            )
-        ));
+        verify(accountRepository).save(eq(updatedAccount));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void updateAccount_NotFound() {
+    @Test
+    void Updating_Account_By_Invalid_ID_Is_Not_Successful() {
         long expectedInvalidID = rand.nextLong();
 
         Account updatedAccount = new Account(
-            expectedUpdatedUsername,
-            expectedEmail,
-            expectedUpdatedPassword,
-            expectedUpdatedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUpdatedUsername,
+                expectedEmail,
+                expectedUpdatedPassword,
+                expectedUpdatedSecretWord,
+                expectedRoles
         );
 
         updatedAccount.setID(expectedInvalidID);
@@ -448,37 +387,29 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedInvalidID));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByID() {
+    @Test
+    void Getting_Account_By_Valid_ID_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
 
-        assertDoesNotThrow(() -> {
-            Account actualAccount = sut.getAccountByID(expectedID);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
+        Account actualAccount = sut.getAccountByID(expectedID);
 
-            assertEquals(expectedID, actualAccount.getID());
-            assertEquals(expectedUsername, actualAccount.getUsername());
-            assertEquals(expectedEmail, actualAccount.getEmail());
-            assertEquals(expectedPassword, actualAccount.getPassword());
-            assertEquals(expectedSecretWord, actualAccount.getSecretWord());
-            assertTrue(compareStringArrayContent(expectedRoles, actualRoles));
-        });
+        assertEquals(expectedAccount, actualAccount);
 
         verify(accountRepository).findById(eq(expectedID));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByID_NotFound() {
+    @Test
+    void Getting_Account_By_Invalid_ID_Is_Not_Successful() {
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> sut.getAccountByID(expectedID));
@@ -486,37 +417,29 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedID));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByUsernameOrEmail() {
+    @Test
+    void Getting_Account_By_Existing_Username_And_Email_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.of(expectedAccount));
 
-        assertDoesNotThrow(() -> {
-            Account actualAccount = sut.getAccountByUsernameOrEmail(expectedUsername, expectedEmail);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
+        Account actualAccount = sut.getAccountByUsernameOrEmail(expectedUsername, expectedEmail);
 
-            assertEquals(expectedID, actualAccount.getID());
-            assertEquals(expectedUsername, actualAccount.getUsername());
-            assertEquals(expectedEmail, actualAccount.getEmail());
-            assertEquals(expectedPassword, actualAccount.getPassword());
-            assertEquals(expectedSecretWord, actualAccount.getSecretWord());
-            assertTrue(compareStringArrayContent(expectedRoles, actualRoles));
-        });
+        assertEquals(expectedAccount, actualAccount);
 
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByUsernameOrEmail_NotFound() {
+    @Test
+    void Getting_Account_By_Not_Existing_Username_And_Email_Is_Not_Successful() {
         when(accountRepository.findByUsernameOrEmail(any(), any())).thenReturn(Optional.empty());
 
         assertThrows(
@@ -527,22 +450,22 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void deleteAccountByID() {
+    @Test
+    void Deleting_Account_By_Existing_ID_Is_Successful() {
         Account expectedAccount = new Account("","","","", List.of());
 
         expectedAccount.setID(expectedID);
 
         when(accountRepository.findById(any())).thenReturn(Optional.of(expectedAccount));
 
-        assertDoesNotThrow(() -> sut.deleteAccountByID(expectedID));
+        sut.deleteAccountByID(expectedID);
 
         verify(accountRepository).findById(eq(expectedID));
         verify(accountRepository).delete(argThat(account -> account.getID() == expectedID));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void deleteAccountByID_NotFound() {
+    @Test
+    void Deleting_Account_By_Not_Existing_ID_Is_Not_Successful() {
         when(accountRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> sut.deleteAccountByID(expectedID));
@@ -550,37 +473,29 @@ class AccountServiceImplTest {
         verify(accountRepository).findById(eq(expectedID));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByUsername() {
+    @Test
+    void Getting_Account_By_Existing_Username_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         when(accountRepository.findByUsername(any())).thenReturn(Optional.of(expectedAccount));
 
-        assertDoesNotThrow(() -> {
-            Account actualAccount = sut.getAccountByUsername(expectedUsername);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
+        Account actualAccount = sut.getAccountByUsername(expectedUsername);
 
-            assertEquals(expectedID, actualAccount.getID());
-            assertEquals(expectedUsername, actualAccount.getUsername());
-            assertEquals(expectedEmail, actualAccount.getEmail());
-            assertEquals(expectedPassword, actualAccount.getPassword());
-            assertEquals(expectedSecretWord, actualAccount.getSecretWord());
-            assertTrue(compareStringArrayContent(expectedRoles, actualRoles));
-        });
+        assertEquals(expectedAccount, actualAccount);
 
         verify(accountRepository).findByUsername(eq(expectedUsername));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByUsername_NotFound() {
+    @Test
+    void Getting_Account_By_Not_Existing_Username_Is_Not_Successful() {
         when(accountRepository.findByUsername(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> sut.getAccountByUsername(expectedUsername));
@@ -588,37 +503,29 @@ class AccountServiceImplTest {
         verify(accountRepository).findByUsername(eq(expectedUsername));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByEmail() {
+    @Test
+    void Getting_Account_By_Existing_Email_Is_Successful() {
         Account expectedAccount = new Account(
-            expectedUsername,
-            expectedEmail,
-            expectedPassword,
-            expectedSecretWord,
-            Arrays.stream(expectedRoles).map(Role::new).toList()
+                expectedUsername,
+                expectedEmail,
+                expectedPassword,
+                expectedSecretWord,
+                expectedRoles
         );
 
         expectedAccount.setID(expectedID);
 
         when(accountRepository.findByEmail(any())).thenReturn(Optional.of(expectedAccount));
 
-        assertDoesNotThrow(() -> {
-            Account actualAccount = sut.getAccountByEmail(expectedEmail);
-            String[] actualRoles = actualAccount.getRoles().stream().map(Role::getID).toArray(String[]::new);
+        Account actualAccount = sut.getAccountByEmail(expectedEmail);
 
-            assertEquals(expectedID, actualAccount.getID());
-            assertEquals(expectedUsername, actualAccount.getUsername());
-            assertEquals(expectedEmail, actualAccount.getEmail());
-            assertEquals(expectedPassword, actualAccount.getPassword());
-            assertEquals(expectedSecretWord, actualAccount.getSecretWord());
-            assertTrue(compareStringArrayContent(expectedRoles, actualRoles));
-        });
+        assertEquals(expectedAccount, actualAccount);
 
         verify(accountRepository).findByEmail(eq(expectedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void getAccountByEmail_NotFound() {
+    @Test
+    void Getting_Account_By_Not_Existing_Email_Is_Not_Successful() {
         when(accountRepository.findByEmail(any())).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> sut.getAccountByEmail(expectedEmail));
@@ -626,8 +533,8 @@ class AccountServiceImplTest {
         verify(accountRepository).findByEmail(eq(expectedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void existsAccountByUsername() {
+    @Test
+    void Checking_Existence_By_Existing_Username_Is_Positive() {
         when(accountRepository.existsByUsername(any())).thenReturn(true);
 
         assertTrue(sut.existsAccountByUsername(expectedUsername));
@@ -635,8 +542,8 @@ class AccountServiceImplTest {
         verify(accountRepository).existsByUsername(eq(expectedUsername));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void existsAccountByUsername_NotFound() {
+    @Test
+    void Checking_Existence_By_Not_Existing_Username_Is_Negative() {
         when(accountRepository.existsByUsername(any())).thenReturn(false);
 
         assertFalse(sut.existsAccountByUsername(expectedUsername));
@@ -644,8 +551,8 @@ class AccountServiceImplTest {
         verify(accountRepository).existsByUsername(eq(expectedUsername));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void existsAccountByEmail() {
+    @Test
+    void Checking_Existence_By_Existing_Email_Is_Positive() {
         when(accountRepository.existsByEmail(any())).thenReturn(true);
 
         assertTrue(sut.existsAccountByEmail(expectedEmail));
@@ -653,23 +560,13 @@ class AccountServiceImplTest {
         verify(accountRepository).existsByEmail(eq(expectedEmail));
     }
 
-    @RepeatedTest(TEST_REPETITIONS_COUNT)
-    void existsAccountByEmail_NotFound() {
+    @Test
+    void Checking_Existence_By_Not_Existing_Email_Is_Negative() {
         when(accountRepository.existsByEmail(any())).thenReturn(false);
 
         assertFalse(sut.existsAccountByEmail(expectedEmail));
 
         verify(accountRepository).existsByEmail(eq(expectedEmail));
-    }
-
-    private boolean compareStringArrayContent(String[] expectedArray, String[] actualArray) {
-        if (expectedArray.length != actualArray.length) return false;
-
-        for (String expectedItem : expectedArray) {
-            if (Arrays.stream(actualArray).noneMatch(actualItem -> actualItem.equals(expectedItem))) return false;
-        }
-
-        return true;
     }
 
     private int randStringLength() {

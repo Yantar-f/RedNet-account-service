@@ -25,4 +25,16 @@ public class Role {
         this.ID = ID;
     }
 
+    @Override
+    public int hashCode() {
+        return ID.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Role role)) return false;
+
+        return ID.equals(role.ID);
+    }
 }

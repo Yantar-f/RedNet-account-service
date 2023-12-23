@@ -18,6 +18,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Entity
@@ -126,5 +127,29 @@ public class Account {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public int hashCode() {
+        return  (int)ID *
+                username.hashCode() *
+                email.hashCode() *
+                password.hashCode() *
+                secretWord.hashCode() *
+                roles.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Account account)) return false;
+
+        return  ID == account.ID &&
+                username.equals(account.username) &&
+                email.equals(account.email) &&
+                password.equals(account.password) &&
+                secretWord.equals(account.secretWord) &&
+                roles.size() == account.roles.size() &&
+                new HashSet<>(roles).containsAll(account.roles);
     }
 }
