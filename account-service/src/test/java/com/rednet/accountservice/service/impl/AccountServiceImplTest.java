@@ -116,7 +116,8 @@ class AccountServiceImplTest {
 
         assertThrows(OccupiedValueException.class, () -> sut.createAccount(accountCreationBody));
 
-        verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
+        verify(accountRepository)
+                .findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
     @Test
@@ -152,9 +153,14 @@ class AccountServiceImplTest {
 
         assertDoesNotThrow(() -> sut.updateAccount(expectedUpdatedAccount));
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
-        verify(accountRepository).save(eq(expectedAccount));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
+
+        verify(accountRepository)
+                .save(eq(expectedAccount));
     }
 
     @Test
@@ -197,8 +203,11 @@ class AccountServiceImplTest {
 
         assertThrows(OccupiedValueException.class, () -> sut.updateAccount(updatedAccount));
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .findByUsernameOrEmail(eq(expectedUpdatedUsername), eq(expectedUpdatedEmail));
     }
 
     @Test
@@ -231,9 +240,14 @@ class AccountServiceImplTest {
 
         sut.updateAccount(updatedAccount);
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
-        verify(accountRepository).save(eq(updatedAccount));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .findByUsername(eq(expectedUpdatedUsername));
+
+        verify(accountRepository)
+                .save(eq(updatedAccount));
     }
 
     @Test
@@ -276,8 +290,11 @@ class AccountServiceImplTest {
 
         assertThrows(OccupiedValueException.class, () -> sut.updateAccount(updatedAccount));
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).findByUsername(eq(expectedUpdatedUsername));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .findByUsername(eq(expectedUpdatedUsername));
     }
 
     @Test
@@ -310,9 +327,14 @@ class AccountServiceImplTest {
 
         sut.updateAccount(updatedAccount);
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
-        verify(accountRepository).save(eq(updatedAccount));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .findByEmail(eq(expectedUpdatedEmail));
+
+        verify(accountRepository)
+                .save(eq(updatedAccount));
     }
 
     @Test
@@ -355,8 +377,11 @@ class AccountServiceImplTest {
 
         assertThrows(OccupiedValueException.class, () -> sut.updateAccount(updatedAccount));
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).findByEmail(eq(expectedUpdatedEmail));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .findByEmail(eq(expectedUpdatedEmail));
     }
 
     @Test
@@ -389,8 +414,11 @@ class AccountServiceImplTest {
 
         sut.updateAccount(updatedAccount);
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).save(eq(updatedAccount));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .save(eq(updatedAccount));
     }
 
     @Test
@@ -412,7 +440,8 @@ class AccountServiceImplTest {
 
         assertThrows(AccountNotFoundException.class, () -> sut.updateAccount(updatedAccount));
 
-        verify(accountRepository).findById(eq(expectedInvalidID));
+        verify(accountRepository)
+                .findById(eq(expectedInvalidID));
     }
 
     @Test
@@ -434,7 +463,8 @@ class AccountServiceImplTest {
 
         assertEquals(expectedAccount, actualAccount);
 
-        verify(accountRepository).findById(eq(expectedID));
+        verify(accountRepository)
+                .findById(eq(expectedID));
     }
 
     @Test
@@ -444,7 +474,8 @@ class AccountServiceImplTest {
 
         assertThrows(AccountNotFoundException.class, () -> sut.getAccountByID(expectedID));
 
-        verify(accountRepository).findById(eq(expectedID));
+        verify(accountRepository)
+                .findById(eq(expectedID));
     }
 
     @Test
@@ -466,7 +497,8 @@ class AccountServiceImplTest {
 
         assertEquals(expectedAccount, actualAccount);
 
-        verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
+        verify(accountRepository)
+                .findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
     @Test
@@ -479,7 +511,8 @@ class AccountServiceImplTest {
             () -> sut.getAccountByUsernameOrEmail(expectedUsername, expectedEmail)
         );
 
-        verify(accountRepository).findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
+        verify(accountRepository)
+                .findByUsernameOrEmail(eq(expectedUsername), eq(expectedEmail));
     }
 
     @Test
@@ -493,8 +526,11 @@ class AccountServiceImplTest {
 
         sut.deleteAccountByID(expectedID);
 
-        verify(accountRepository).findById(eq(expectedID));
-        verify(accountRepository).delete(argThat(account -> account.getID() == expectedID));
+        verify(accountRepository)
+                .findById(eq(expectedID));
+
+        verify(accountRepository)
+                .delete(argThat(account -> account.getID() == expectedID));
     }
 
     @Test
@@ -504,7 +540,8 @@ class AccountServiceImplTest {
 
         assertThrows(AccountNotFoundException.class, () -> sut.deleteAccountByID(expectedID));
 
-        verify(accountRepository).findById(eq(expectedID));
+        verify(accountRepository)
+                .findById(eq(expectedID));
     }
 
     @Test
@@ -526,7 +563,8 @@ class AccountServiceImplTest {
 
         assertEquals(expectedAccount, actualAccount);
 
-        verify(accountRepository).findByUsername(eq(expectedUsername));
+        verify(accountRepository)
+                .findByUsername(eq(expectedUsername));
     }
 
     @Test
@@ -536,7 +574,8 @@ class AccountServiceImplTest {
 
         assertThrows(AccountNotFoundException.class, () -> sut.getAccountByUsername(expectedUsername));
 
-        verify(accountRepository).findByUsername(eq(expectedUsername));
+        verify(accountRepository)
+                .findByUsername(eq(expectedUsername));
     }
 
     @Test
@@ -558,7 +597,8 @@ class AccountServiceImplTest {
 
         assertEquals(expectedAccount, actualAccount);
 
-        verify(accountRepository).findByEmail(eq(expectedEmail));
+        verify(accountRepository)
+                .findByEmail(eq(expectedEmail));
     }
 
     @Test
@@ -568,7 +608,8 @@ class AccountServiceImplTest {
 
         assertThrows(AccountNotFoundException.class, () -> sut.getAccountByEmail(expectedEmail));
 
-        verify(accountRepository).findByEmail(eq(expectedEmail));
+        verify(accountRepository)
+                .findByEmail(eq(expectedEmail));
     }
 
     @Test
@@ -578,7 +619,8 @@ class AccountServiceImplTest {
 
         assertTrue(sut.existsAccountByUsername(expectedUsername));
 
-        verify(accountRepository).existsByUsername(eq(expectedUsername));
+        verify(accountRepository)
+                .existsByUsername(eq(expectedUsername));
     }
 
     @Test
@@ -588,7 +630,8 @@ class AccountServiceImplTest {
 
         assertFalse(sut.existsAccountByUsername(expectedUsername));
 
-        verify(accountRepository).existsByUsername(eq(expectedUsername));
+        verify(accountRepository)
+                .existsByUsername(eq(expectedUsername));
     }
 
     @Test
@@ -598,7 +641,8 @@ class AccountServiceImplTest {
 
         assertTrue(sut.existsAccountByEmail(expectedEmail));
 
-        verify(accountRepository).existsByEmail(eq(expectedEmail));
+        verify(accountRepository)
+                .existsByEmail(eq(expectedEmail));
     }
 
     @Test
@@ -608,7 +652,8 @@ class AccountServiceImplTest {
 
         assertFalse(sut.existsAccountByEmail(expectedEmail));
 
-        verify(accountRepository).existsByEmail(eq(expectedEmail));
+        verify(accountRepository)
+                .existsByEmail(eq(expectedEmail));
     }
 
     private int randStringLength() {
