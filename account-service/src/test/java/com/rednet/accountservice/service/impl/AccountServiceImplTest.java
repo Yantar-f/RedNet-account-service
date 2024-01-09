@@ -9,7 +9,6 @@ import com.rednet.accountservice.repository.AccountRepository;
 import com.rednet.accountservice.service.AccountService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -30,20 +29,21 @@ class AccountServiceImplTest {
     int     IDValueBound = 200;
 
     private final AccountRepository accountRepository = mock(AccountRepository.class);
-    private final AccountService    sut = new AccountServiceImpl(accountRepository);
 
-    private final long      expectedID = rand.nextLong(IDValueBound);
-    private final String    expectedUsername = randString();
-    private final String    expectedEmail = randString();
-    private final String    expectedPassword = randString();
-    private final String    expectedSecretWord = randString();
-    private final String    expectedUpdatedUsername = randString();
-    private final String    expectedUpdatedEmail = randString();
-    private final String    expectedUpdatedPassword = randString();
-    private final String    expectedUpdatedSecretWord = randString();
+    private final AccountService sut = new AccountServiceImpl(accountRepository);
 
-    private final List<Role>  expectedUpdatedRoles = new ArrayList<>(){{add(new Role("ROLE_ADMIN"));}};
-    private final List<Role>  expectedRoles = new ArrayList<>(){{add(new Role("ROLE_USER"));}};
+    private final long      expectedID          = rand.nextLong(IDValueBound);
+    private final String    expectedUsername    = randString();
+    private final String    expectedEmail       = randString();
+    private final String    expectedPassword    = randString();
+    private final String    expectedSecretWord          = randString();
+    private final String    expectedUpdatedUsername     = randString();
+    private final String    expectedUpdatedEmail        = randString();
+    private final String    expectedUpdatedPassword     = randString();
+    private final String    expectedUpdatedSecretWord   = randString();
+
+    private final List<Role>  expectedUpdatedRoles  = new ArrayList<>(){{add(new Role("ROLE_ADMIN"));}};
+    private final List<Role>  expectedRoles         = new ArrayList<>(){{add(new Role("ROLE_USER"));}};
 
     @AfterEach
     public void after() {
