@@ -26,13 +26,13 @@ import java.util.List;
         name = "accounts",
 
         uniqueConstraints = {
-                @UniqueConstraint(name = "unique_username_constraint", columnNames = "username"),
-                @UniqueConstraint(name = "unique_email_constraint", columnNames = "email")
+                @UniqueConstraint(name = "unique_username_constraint",  columnNames = "username"),
+                @UniqueConstraint(name = "unique_email_constraint",     columnNames = "email")
         },
 
         indexes = {
                 @Index(name = "username_index", columnList = "username"),
-                @Index(name = "email_index", columnList = "email")
+                @Index(name = "email_index",    columnList = "email")
         })
 public class Account {
     @Id
