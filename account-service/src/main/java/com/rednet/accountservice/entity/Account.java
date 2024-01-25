@@ -59,21 +59,18 @@ public class Account {
     private String secretWord;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinTable(
-            name = "accounts_to_roles",
-            joinColumns = @JoinColumn (name = "account_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "accounts_to_roles",
+               joinColumns = @JoinColumn (name = "account_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Size(min = 1, message = "There is should be at least one role")
     private List<Role> roles;
 
     protected Account() {}
-    public Account(
-            String username,
-            String email,
-            String password,
-            String secretWord,
-            List<Role> roles
-    ) {
+    public Account(String username,
+                   String email,
+                   String password,
+                   String secretWord,
+                   List<Role> roles) {
         this.username = username;
         this.email = email;
         this.password = password;

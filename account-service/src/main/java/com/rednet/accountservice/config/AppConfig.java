@@ -8,8 +8,16 @@ import java.util.Arrays;
 
 @Configuration
 public class AppConfig {
+    private final RoleRepository roleRepository;
+
     public AppConfig(RoleRepository roleRepository) {
-        Arrays.stream(EnumRoles.values()).map(EnumRoles::name).forEach(role -> {
+        this.roleRepository = roleRepository;
+
+        createRolesIfNotExists();
+    }
+
+    private void createRolesIfNotExists() {
+        Arrays.stream(RolesEnum.values()).map(RolesEnum::name).forEach(role -> {
             if ( ! roleRepository.existsById(role)) roleRepository.save(new Role(role));
         });
     }

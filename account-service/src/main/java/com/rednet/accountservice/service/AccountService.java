@@ -1,7 +1,9 @@
 package com.rednet.accountservice.service;
 
-import com.rednet.accountservice.dto.AccountCreationBody;
+import com.rednet.accountservice.model.AccountCreationBody;
 import com.rednet.accountservice.entity.Account;
+import com.rednet.accountservice.model.AccountUniqueFields;
+import com.rednet.accountservice.model.AccountUniqueFieldsOccupancy;
 
 public interface AccountService {
     Account createAccount               (AccountCreationBody accountCreationBody);
@@ -13,4 +15,5 @@ public interface AccountService {
     boolean existsAccountByUsername     (String username);
     boolean existsAccountByEmail        (String email);
     void    deleteAccountByID           (long id);
+    AccountUniqueFieldsOccupancy getAccountUniqueFieldsOccupancy(AccountUniqueFields fields);
 }

@@ -1,6 +1,6 @@
 package com.rednet.accountservice.service.impl;
 
-import com.rednet.accountservice.dto.AccountCreationBody;
+import com.rednet.accountservice.model.AccountCreationBody;
 import com.rednet.accountservice.entity.Account;
 import com.rednet.accountservice.entity.Role;
 import com.rednet.accountservice.exception.AccountNotFoundException;
