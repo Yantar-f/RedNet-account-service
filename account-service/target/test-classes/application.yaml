@@ -1,0 +1,10 @@
+spring:
+  main:
+    banner-mode: off
+  cloud:
+    discovery:
+      enabled: false
+    config:
+      enabled: false
+      discovery:
+        enabled: false

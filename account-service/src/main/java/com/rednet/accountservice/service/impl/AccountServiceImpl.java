@@ -1,6 +1,6 @@
 package com.rednet.accountservice.service.impl;
 
-import com.rednet.accountservice.model.AccountCreationBody;
+import com.rednet.accountservice.model.AccountCreationData;
 import com.rednet.accountservice.entity.Account;
 import com.rednet.accountservice.entity.Role;
 import com.rednet.accountservice.exception.AccountNotFoundException;
@@ -19,45 +19,45 @@ import java.util.Map;
 @Service
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
-    private final Map<String, ConstraintsUpdatingChecker> constraintsUpdatingCheckerMap = new HashMap<>();
+    private final Map<String, ConstraintsUpdatesChecker> constraintsUpdatingCheckerMap = new HashMap<>();
 
 
     @FunctionalInterface
-    private interface ConstraintsUpdatingChecker {
+    private interface ConstraintsUpdatesChecker {
         void checkViolation(Account account);
     }
 
     public AccountServiceImpl(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
-        initializeConstraintsUpdatingCheckerMap();
+        initializeConstraintsUpdatesCheckerMap();
     }
 
     @Override
-    public Account createAccount(AccountCreationBody accountCreationBody) {
+    public Account createAccount(AccountCreationData accountCreationData) {
         AccountUniqueFields uniqueFields = new AccountUniqueFields(
-                accountCreationBody.username(),
-                accountCreationBody.email()
+                accountCreationData.username(),
+                accountCreationData.email()
         );
 
         checkAccountUniqueFieldsOccupancy(uniqueFields);
 
         return accountRepository.save(new Account(
-                accountCreationBody.username(),
-                accountCreationBody.email(),
-                accountCreationBody.password(),
-                accountCreationBody.secretWord(),
-                Arrays.stream(accountCreationBody.roles()).map(Role::new).toList()
+                accountCreationData.username(),
+                accountCreationData.email(),
+                accountCreationData.password(),
+                accountCreationData.secretWord(),
+                Arrays.stream(accountCreationData.roles()).map(Role::new).toList()
         ));
     }
 
     @Override
     public void updateAccount(Account updatedAccount) {
         Account accountToUpdate = accountRepository
-                .findById(updatedAccount.getID())
+                .findById(updatedAccount.getId())
                 .orElseThrow(() -> {
                     Map<String, String> searchFields = new HashMap<>();
 
-                    searchFields.put("ID", String.valueOf(updatedAccount.getID()));
+                    searchFields.put("ID", String.valueOf(updatedAccount.getId()));
 
                     return new AccountNotFoundException(searchFields);
                 });
@@ -193,54 +193,45 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private void checkUpdatingConstraintsViolations(Account existingAccount, Account updatedAccount) {
+    private void checkUpdatingConstraintsViolations(Account accountToUpdate, Account updatedAccount) {
         String constraintCheckingKey =
-                !updatedAccount.getUsername().equals(existingAccount.getUsername()) +
-                        String.valueOf(!updatedAccount.getEmail().equals(existingAccount.getEmail()));
+                String.valueOf(!updatedAccount.getUsername().equals(accountToUpdate.getUsername())) +
+                               !updatedAccount.getEmail().equals(accountToUpdate.getEmail());
 
-        constraintsUpdatingCheckerMap.get(constraintCheckingKey).checkViolation(updatedAccount);
+        constraintsUpdatingCheckerMap
+                .get(constraintCheckingKey)
+                .checkViolation(updatedAccount);
     }
 
-    private void initializeConstraintsUpdatingCheckerMap() {
-        constraintsUpdatingCheckerMap.put("truetrue", updatedAccount ->
-                accountRepository
-                        .findByUsernameOrEmail(updatedAccount.getUsername(), updatedAccount.getEmail())
-                        .ifPresent(account -> {
-                            Map<String, String> occupiedFields = new HashMap<>();
+    private void initializeConstraintsUpdatesCheckerMap() {
+        constraintsUpdatingCheckerMap.put("truetrue", updatedAccount -> {
+            AccountUniqueFields fields = new AccountUniqueFields(
+                    updatedAccount.getUsername(),
+                    updatedAccount.getEmail()
+            );
 
-                            if (account.getUsername().equals(updatedAccount.getUsername()))
-                                occupiedFields.put("username", account.getUsername());
+            checkAccountUniqueFieldsOccupancy(fields);
+        });
 
-                            if (account.getEmail().equals(updatedAccount.getEmail()))
-                                occupiedFields.put("email", account.getEmail());
+        constraintsUpdatingCheckerMap.put("truefalse", updatedAccount -> {
+            if (accountRepository.existsByUsername(updatedAccount.getUsername())) {
+                Map<String, String> occupiedFields = new HashMap<>();
 
-                            throw new OccupiedValueException(occupiedFields);
-                        })
-        );
+                occupiedFields.put("username", updatedAccount.getUsername());
 
-        constraintsUpdatingCheckerMap.put("truefalse", updatedAccount ->
-                accountRepository
-                        .findByUsername(updatedAccount.getUsername())
-                        .ifPresent(account -> {
-                            Map<String, String> occupiedFields = new HashMap<>();
+                throw new OccupiedValueException(occupiedFields);
+            }
+        });
 
-                            occupiedFields.put("username", account.getUsername());
+        constraintsUpdatingCheckerMap.put("falsetrue", updatedAccount -> {
+            if (accountRepository.existsByEmail(updatedAccount.getEmail())) {
+                Map<String, String> occupiedFields = new HashMap<>();
 
-                            throw new OccupiedValueException(occupiedFields);
-                        })
-        );
+                occupiedFields.put("emial", updatedAccount.getEmail());
 
-        constraintsUpdatingCheckerMap.put("falsetrue", updatedAccount ->
-                accountRepository
-                        .findByEmail(updatedAccount.getEmail())
-                        .ifPresent(account -> {
-                            Map<String, String> occupiedFields = new HashMap<>();
-
-                            occupiedFields.put("email", account.getEmail());
-
-                            throw new OccupiedValueException(occupiedFields);
-                        })
-        );
+                throw new OccupiedValueException(occupiedFields);
+            }
+        });
 
         constraintsUpdatingCheckerMap.put("falsefalse", updatedAccount -> {});
     }

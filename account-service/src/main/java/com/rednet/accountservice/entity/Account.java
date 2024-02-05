@@ -13,41 +13,38 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.HashSet;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "accounts",
+@Table(name = "accounts",
 
-        uniqueConstraints = {
-                @UniqueConstraint(name = "unique_username_constraint",  columnNames = "username"),
-                @UniqueConstraint(name = "unique_email_constraint",     columnNames = "email")
-        },
+       uniqueConstraints = {
+               @UniqueConstraint(name = "unique_username_constraint",  columnNames = "username"),
+               @UniqueConstraint(name = "unique_email_constraint",     columnNames = "email")
+       },
 
-        indexes = {
-                @Index(name = "username_index", columnList = "username"),
-                @Index(name = "email_index",    columnList = "email")
-        })
+       indexes = {
+               @Index(name = "username_index", columnList = "username"),
+               @Index(name = "email_index",    columnList = "email")
+       })
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Digits(fraction = 0, integer = 0)
-    @NotBlank(message = "ID min length is 1")
+    @NotNull
     @Column(name = "account_id")
-    private long ID;
+    private Long id;
 
     @Column(name = "username")
     @NotBlank(message = "Username min length is 1")
     private String username;
 
     @Column(name = "email")
-    @Email(message = "Invalid email")
+    @NotBlank
     private String email;
 
     @Column(name = "password")
@@ -62,6 +59,7 @@ public class Account {
     @JoinTable(name = "accounts_to_roles",
                joinColumns = @JoinColumn (name = "account_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @NotNull
     @Size(min = 1, message = "There is should be at least one role")
     private List<Role> roles;
 
@@ -78,12 +76,12 @@ public class Account {
         this.roles = roles;
     }
 
-    public long getID() {
-        return ID;
+    public Long getId() {
+        return id;
     }
 
-    public void setID(long ID) {
-        this.ID = ID;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -128,7 +126,7 @@ public class Account {
 
     @Override
     public int hashCode() {
-        return  (int)ID *
+        return  id.hashCode() *
                 username.hashCode() *
                 email.hashCode() *
                 password.hashCode() *
@@ -141,7 +139,7 @@ public class Account {
         if (this == obj) return true;
         if (!(obj instanceof Account account)) return false;
 
-        return  ID == account.ID &&
+        return  id.equals(account.id) &&
                 username.equals(account.username) &&
                 email.equals(account.email) &&
                 password.equals(account.password) &&
